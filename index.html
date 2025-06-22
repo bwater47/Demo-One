@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoorDash Order Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .restaurant-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .restaurant-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .restaurant-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .restaurant-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .restaurant-card h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .restaurant-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 3px 0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .menu-item.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .menu-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .menu-item p {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .menu-item .price {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .quantity-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .quantity-display {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .order-summary {
+            background: #e8f5e8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .order-summary h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #2e7d32;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .order-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            min-width: 250px;
+        }
+
+        .order-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .order-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .order-details h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .order-details p {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .order-details strong {
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .api-url {
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚚 DoorDash Order System</h1>
+
+        <div class="api-url">
+            <strong>API Endpoint:</strong> <span id="api-url-display"></span>
+        </div>
+
+        <div id="status" class="status hidden"></div>
+
+        <!-- Restaurant Selection -->
+        <div class="section">
+            <h3>🏪 Select Restaurant</h3>
+            <div id="restaurant-selector" class="restaurant-selector">
+                <!-- Restaurants will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="section">
+            <h3>🍽️ Menu Items</h3>
+            <div id="menu-grid" class="menu-grid">
+                <!-- Menu items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="section">
+            <h3>📋 Order Summary</h3>
+            <div id="order-summary" class="order-summary">
+                <p>Select items from the menu above to build your order.</p>
+            </div>
+            <button id="order-btn" class="order-button" disabled>🚚 Place Order</button>
+        </div>
+
+        <!-- Order Details -->
+        <div id="order-details" class="order-details hidden">
+            <h3>📋 Order Details</h3>
+            <div id="order-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // This is for testing locally.
+        // const API_URL = '/.netlify/functions/graphql';
+        const API_URL = 'https://mockdoordash.netlify.app/.netlify/functions/graphql';
+        document.getElementById('api-url-display').textContent = API_URL;
+
+        let currentOrder = null;
+        let selectedRestaurant = null;
+        let selectedItems = new Map(); // Map of menuItemId -> {item, quantity}
+
+        // GraphQL queries
+        const GET_RESTAURANTS = `
+            query GetRestaurants {
+                restaurants {
+                    id
+                    name
+                    cuisine
+                    rating
+                    deliveryTime
+                    deliveryFee
+                    isOpen
+                    address
+                }
+            }
+        `;
+
+        const GET_MENU_ITEMS = `
+            query GetMenuItems($restaurantId: ID!) {
+                menuItems(restaurantId: $restaurantId) {
+                    id
+                    name
+                    description
+                    price
+                    category
+                    isAvailable
+                }
+            }
+        `;
+
+        const CREATE_ORDER = `
+            mutation CreateOrder($input: CreateOrderInput!) {
+                createOrder(input: $input) {
+                    id
+                    status
+                    totalAmount
+                    items {
+                        quantity
+                        menuItem {
+                            name
+                            price
+                        }
+                    }
+                    restaurant {
+                        name
+                    }
+                }
+            }
+        `;
+
+        // Utility functions
+        function showStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+
+        async function graphqlRequest(query, variables) {
+            const response = await fetch('/.netlify/functions/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query,
+                    variables
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('GraphQL Error Response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.errors) {
+                console.error('GraphQL Errors:', data.errors);
+                throw new Error(data.errors[0].message);
+            }
+
+            return data.data;
+        }
+
+        // Load restaurants
+        async function loadRestaurants() {
+            try {
+                showStatus('Loading restaurants...');
+                const data = await graphqlRequest(GET_RESTAURANTS);
+                displayRestaurants(data.restaurants);
+                hideStatus();
+            } catch (error) {
+                showStatus(`Error loading restaurants: ${error.message}`, 'error');
+            }
+        }
+
+        function displayRestaurants(restaurants) {
+            const container = document.getElementById('restaurant-selector');
+            container.innerHTML = restaurants.map(restaurant => `
+                <div class="restaurant-card" data-restaurant-id="${restaurant.id}" onclick="selectRestaurant('${restaurant.id}')">
+                    <h4>${restaurant.name}</h4>
+                    <p>${restaurant.cuisine}</p>
+                    <p>⭐ ${restaurant.rating} | 🕒 ${restaurant.deliveryTime}</p>
+                    <p>💰 $${restaurant.deliveryFee} delivery fee</p>
+                    <p>📍 ${restaurant.address}</p>
+                </div>
+            `).join('');
+        }
+
+        // Select restaurant and load menu
+        async function selectRestaurant(restaurantId) {
+            // Update UI
+            document.querySelectorAll('.restaurant-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-restaurant-id="${restaurantId}"]`).classList.add('selected');
+
+            selectedRestaurant = restaurantId;
+            selectedItems.clear();
+            updateOrderSummary();
+
+            // Load menu items
+            try {
+                showStatus('Loading menu...');
+                const data = await graphqlRequest(GET_MENU_ITEMS, { restaurantId });
+                displayMenuItems(data.menuItems);
+                hideStatus();
+            } catch (error) {
+                showStatus(`Error loading menu: ${error.message}`, 'error');
+            }
+        }
+
+        function displayMenuItems(menuItems) {
+            const container = document.getElementById('menu-grid');
+            container.innerHTML = menuItems.map(item => `
+                <div class="menu-item" data-menu-item-id="${item.id}">
+                    <h4>${item.name}</h4>
+                    <p>${item.description}</p>
+                    <p class="price">$${item.price}</p>
+                    <p>Category: ${item.category}</p>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
+                        <span class="quantity-display" id="qty-${item.id}">0</span>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateQuantity(itemId, change) {
+            const menuItemElement = document.querySelector(`[data-menu-item-id="${itemId}"]`);
+            const currentItem = selectedItems.get(itemId);
+            const currentQty = currentItem?.quantity || 0;
+            const newQty = Math.max(0, currentQty + change);
+
+            if (newQty === 0) {
+                selectedItems.delete(itemId);
+            } else {
+                if (!currentItem) {
+                    const name = menuItemElement.querySelector('h4').textContent;
+                    const price = parseFloat(menuItemElement.querySelector('.price').textContent.replace('$', ''));
+                    selectedItems.set(itemId, { id: itemId, name, price, quantity: newQty });
+                } else {
+                    selectedItems.set(itemId, { ...currentItem, quantity: newQty });
+                }
+            }
+
+            // Update display
+            document.getElementById(`qty-${itemId}`).textContent = newQty;
+
+            // Update item styling
+            if (newQty > 0) {
+                menuItemElement.classList.add('selected');
+            } else {
+                menuItemElement.classList.remove('selected');
+            }
+
+            updateOrderSummary();
+        }
+
+        function updateOrderSummary() {
+            const container = document.getElementById('order-summary');
+            const orderBtn = document.getElementById('order-btn');
+
+            if (selectedItems.size === 0) {
+                container.innerHTML = '<p>Select items from the menu above to build your order.</p>';
+                orderBtn.disabled = true;
+                return;
+            }
+
+            let total = 0;
+            const itemsHtml = Array.from(selectedItems.values()).map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                return `
+                    <div class="order-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>$${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                ${itemsHtml}
+                <div class="total">Total: $${total.toFixed(2)}</div>
+            `;
+
+            orderBtn.disabled = false;
+        }
+
+        async function createOrder() {
+            if (!selectedRestaurant || selectedItems.size === 0) {
+                showStatus('Please select a restaurant and items first.', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Creating order...');
+
+                const formattedItems = Array.from(selectedItems.values()).map(item => ({
+                    menuItemId: item.id,
+                    quantity: item.quantity
+                }));
+
+                const orderInput = {
+                    restaurantId: selectedRestaurant,
+                    items: formattedItems
+                };
+
+                const result = await graphqlRequest(CREATE_ORDER, { input: orderInput });
+                currentOrder = result.createOrder;
+
+                showStatus('🎉 Order created successfully!', 'success');
+                showOrderDetails();
+
+                console.log('Order created:', currentOrder);
+            } catch (error) {
+                console.error('Full error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showOrderDetails() {
+            if (!currentOrder) return;
+
+            const orderDetailsEl = document.getElementById('order-details');
+            const orderInfoEl = document.getElementById('order-info');
+
+            const itemsList = currentOrder.items.map(item =>
+                `${item.menuItem.name} (${item.quantity}x) - $${(parseFloat(item.menuItem.price) * item.quantity).toFixed(2)}`
+            ).join('<br>');
+
+            orderInfoEl.innerHTML = `
+                <p><strong>Order ID:</strong> ${currentOrder.id}</p>
+                <p><strong>Restaurant:</strong> ${currentOrder.restaurant.name}</p>
+                <p><strong>Items:</strong><br>${itemsList}</p>
+                <p><strong>Total:</strong> $${currentOrder.totalAmount}</p>
+                <p><strong>Status:</strong> ${currentOrder.status}</p>
+                <p style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 5px; color: #2e7d32;">
+                    <strong>✅ Success!</strong> Your order has been created successfully!
+                </p>
+            `;
+
+            orderDetailsEl.classList.remove('hidden');
+        }
+
+        // Event listeners
+        document.getElementById('order-btn').addEventListener('click', createOrder);
+
+        // Load restaurants on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, API URL:', API_URL);
+            loadRestaurants();
+        });
+    </script>
+</body>
+
+</html>
