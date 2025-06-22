@@ -399,7 +399,7 @@
         }
 
         async function graphqlRequest(query, variables) {
-            const response = await fetch('/.netlify/functions/graphql', {
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
